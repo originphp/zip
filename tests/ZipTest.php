@@ -240,6 +240,55 @@ class ZipTest extends TestCase
         $this->assertFalse($archive->exists('LICENSE.md'));
     }
 
+    public function testEncrypt()
+    {
+        $destination = sys_get_temp_dir() . '/' . uniqid();
+        $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+
+        $archive = new Zip();
+        $result = $archive->create($file)
+            ->add(dirname(__DIR__) . '/README.md')  // file
+            ->encrypt('foo')
+            ->save();
+        $this->assertTrue($result);
+        
+        $list = $archive->open($file)->list();
+        
+        $this->assertTrue($list[0]['encrypted']);
+        $this->assertFalse($archive->extract($destination));
+        $this->assertTrue($archive->extract($destination, ['password' => 'foo']));
+    }
+
+    public function testStore()
+    {
+        $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+        $archive = new Zip();
+        $result = $archive->create($file)
+            ->add(dirname(__DIR__) . '/README.md', ['compress' => false])  // file
+            ->save();
+        $this->assertTrue($result);
+        $list = $archive->open($file)->list();
+        
+        $this->assertEquals($list[0]['size'], $list[0]['compressedSize']);
+    }
+
+    public function testZip()
+    {
+        unlink(static::$archive);
+
+        $result = Zip::zip(dirname(__DIR__) . '/src', static::$archive, ['password' => 1234]);
+        $this->assertTrue($result);
+
+        $this->assertEquals(4, (new Zip)->open(static::$archive)->count());
+    }
+
+    public function testUnzip()
+    {
+        $destination = sys_get_temp_dir() . '/' . uniqid();
+        $this->assertFalse(Zip::unzip(static::$archive, $destination));
+        $this->assertTrue(Zip::unzip(static::$archive, $destination, ['password' => 1234]));
+    }
+
     public static function setUpAfterClass(): void
     {
         @unlink(static::$archive);

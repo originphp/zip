@@ -174,7 +174,8 @@ class Zip
             if (! $file or substr($file['name'], -1) === '/') {
                 continue;
             }
-            if ($file['encryption_method'] !== 0) {
+
+            if ($file['encryption_method'] === 0) {
                 $this->archive->setEncryptionName($file['name'], $this->encryptionMap[$method], $password);
             }
         }
@@ -331,9 +332,11 @@ class Zip
      */
     public static function zip($source, string $desination, array $options = []) : bool
     {
-        $options += ['encryption' => null,'compress' => true, 'password' => null];
+        $options += ['encryption' => 'aes256','compress' => true, 'password' => null];
 
         $archive = new Zip();
+        $archive->create($desination);
+     
         foreach ((array) $source as $item) {
             $archive->add($item, $options);
         }

@@ -117,7 +117,7 @@ class Zip
         
         foreach ($iterator as $iitem) {
             $path = $iitem->getPathName();
-            print $path . "\n";
+       
             $name = str_replace('\\', '/', $path);
      
             if (substr($name, -3) === '/..' or substr($name, -2) === '/.') {
@@ -209,7 +209,7 @@ class Zip
                 ]);
             }
         }
-        print_r($list);
+    
         return $list;
     }
 

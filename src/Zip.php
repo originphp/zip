@@ -121,7 +121,7 @@ class Zip
        
         $this->checkArchive();
 
-        if ($this->encryptionMethod($options['encryption']) === null) {
+        if ($this->supportsEncryption and $this->encryptionMethod($options['encryption']) === null) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $options['encryption']));
         }
 

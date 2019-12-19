@@ -11,10 +11,12 @@ use Origin\Zip\Exception\FileNotFoundException;
 class ZipTest extends TestCase
 {
     private static $archive;
+    private static $supportsEncryption;
 
     public static function setUpBeforeClass(): void
     {
         static::$archive = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+        static::$supportsEncryption = version_compare(phpversion(), '7.3', '>=');
     }
     
     public function testCreate()
@@ -174,6 +176,9 @@ class ZipTest extends TestCase
 
     public function testAddInvalidEncryption()
     {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
         $tmp = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $this->expectException(InvalidArgumentException::class);
         (new Zip())->create('tmp')->add('foo', ['encryption' => 'PGP']);
@@ -181,6 +186,10 @@ class ZipTest extends TestCase
 
     public function testPassword()
     {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+
         $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $archive = new Zip();
         $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password' => 'ladadiladada']);
@@ -210,6 +219,10 @@ class ZipTest extends TestCase
 
     public function testExtractWithPassword()
     {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
 
@@ -242,6 +255,10 @@ class ZipTest extends TestCase
 
     public function testEncrypt()
     {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
 
@@ -274,9 +291,7 @@ class ZipTest extends TestCase
 
     public function testZip()
     {
-        unlink(static::$archive);
-
-        $result = Zip::zip(dirname(__DIR__) . '/src', static::$archive, ['password' => 1234]);
+        $result = Zip::zip(dirname(__DIR__) . '/src', static::$archive, ['overwrite' => true]);
         $this->assertTrue($result);
 
         $this->assertEquals(4, (new Zip)->open(static::$archive)->count());
@@ -284,6 +299,28 @@ class ZipTest extends TestCase
 
     public function testUnzip()
     {
+        $destination = sys_get_temp_dir() . '/' . uniqid();
+        $this->assertTrue(Zip::unzip(static::$archive, $destination));
+    }
+
+    public function testZipWithPassword()
+    {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+
+        $result = Zip::zip(dirname(__DIR__) . '/src', static::$archive, ['overwrite' => true,'password' => 1234]);
+        $this->assertTrue($result);
+
+        $this->assertEquals(4, (new Zip)->open(static::$archive)->count());
+    }
+
+    public function testUnzipWithPassword()
+    {
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $this->assertFalse(Zip::unzip(static::$archive, $destination));
         $this->assertTrue(Zip::unzip(static::$archive, $destination, ['password' => 1234]));

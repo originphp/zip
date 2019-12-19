@@ -15,6 +15,7 @@ declare(strict_types = 1);
 namespace Origin\Zip;
 
 use ZipArchive;
+use BadMethodCallException;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
 
@@ -33,14 +34,32 @@ class Zip
     private $archive;
 
     /**
-     * @var array
+     * @var boolean
      */
-    private $encryptionMap = [
-        'none' => ZipArchive::EM_NONE,
-        'aes128' => ZipArchive::EM_AES_128,
-        'aes192' => ZipArchive::EM_AES_192,
-        'aes256' => ZipArchive::EM_AES_256
-    ];
+    private $supportsEncryption = false;
+
+    public function __construct()
+    {
+        $this->supportsEncryption = version_compare(phpversion(), '7.3', '>=');
+    }
+
+    /**
+     * Gets the encryption method
+     *
+     * @param string $method
+     * @return integer|null
+     */
+    private function encryptionMethod(string $method) : ?int
+    {
+        $encryptionMap = [
+            'none' => ZipArchive::EM_NONE,
+            'aes128' => ZipArchive::EM_AES_128,
+            'aes192' => ZipArchive::EM_AES_192,
+            'aes256' => ZipArchive::EM_AES_256
+        ];
+
+        return isset($encryptionMap[$method]) ? $encryptionMap[$method] : null;
+    }
 
     /**
      * Creates a new ZIP file
@@ -97,7 +116,11 @@ class Zip
        
         $this->checkArchive();
 
-        if (! isset($this->encryptionMap[$options['encryption']])) {
+        if (! $this->supportsEncryption and $options['password']) {
+            throw new BadMethodCallException('Encryption requires PHP 7.3 and above');
+        }
+
+        if ($this->supportsEncryption and $this->encryptionMethod($options['encryption']) === null) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $options['encryption']));
         }
 
@@ -165,7 +188,11 @@ class Zip
     {
         $this->checkArchive();
 
-        if (! isset($this->encryptionMap[$method])) {
+        if (! $this->supportsEncryption) {
+            throw new BadMethodCallException('Encryption requires PHP 7.3 and above');
+        }
+
+        if (! $this->encryptionMethod($method)) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $method));
         }
 
@@ -176,7 +203,7 @@ class Zip
             }
 
             if ($file['encryption_method'] === 0) {
-                $this->archive->setEncryptionName($file['name'], $this->encryptionMap[$method], $password);
+                $this->archive->setEncryptionName($file['name'], $this->encryptionMethod($method), $password);
             }
         }
 
@@ -296,8 +323,8 @@ class Zip
     private function addFileToArchive(string $name, string $filename, array $options) : void
     {
         $this->archive->addFromString($name, file_get_contents($filename));
-        if ($options['password'] !== null) {
-            $this->archive->setEncryptionName($name, $this->encryptionMap[$options['encryption']], (string) $options['password']);
+        if ($options['password'] !== null and $this->supportsEncryption) {
+            $this->archive->setEncryptionName($name, $this->encryptionMethod($options['encryption']), (string) $options['password']);
         }
         if ($options['compress'] === false) {
             $this->archive->setCompressionName($name, ZipArchive::CM_STORE);
@@ -324,6 +351,7 @@ class Zip
      * @param string|array $source the name(s) of the file or directory to compress
      * @param string $desination file with full path to where the zip file will be stored
      * @param array $options The following option keys are supported
+     *   - overwrite: overwrites an archive
      *   - password: password for this archive
      *   - encryption: encryption method to be used when password protecting this archive. aes128,aes192,aes256
      *   - compress: default:true. Set to false to just store.
@@ -332,10 +360,10 @@ class Zip
      */
     public static function zip($source, string $desination, array $options = []) : bool
     {
-        $options += ['encryption' => 'aes256','compress' => true, 'password' => null];
+        $options += ['encryption' => 'aes256','compress' => true, 'password' => null,'overwrite' => false];
 
         $archive = new Zip();
-        $archive->create($desination);
+        $archive->create($desination, ['overwrite' => $options['overwrite']]);
      
         foreach ((array) $source as $item) {
             $archive->add($item, $options);

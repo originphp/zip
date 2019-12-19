@@ -37,7 +37,9 @@ You can also pass any of the following options keys
 
 - password: a password used to encrypt the archive with
 - compress: default:`true`. Set to true if you just want to store the files without compression
-- encryption: default:`aes256`. This is the encryption method used when using a password. Supported encryption methods: `aes128`,`aes192`,and `aes256`.
+- encryption: default:`aes256`. This is the encryption method used when using a password. Supported encryption methods: `aes128`,`aes192`,and `aes256`. 
+
+> To encrypt files with passwords you need to be using PHP 7.3 or above.
 
 ```php
 Zip::zip(__DIR__ .'/src','/backups/today.zip',[
@@ -68,6 +70,8 @@ $zip->create('/path/to/file.zip')
 ```
 
 ### Encryption
+
+> To encrypt files with passwords you need to be using PHP 7.3 or above.
 
 To encrypt all the files in the archive, call the `encrypt` method after adding the files, you can optionally supply the encryption method. Supported encryption methods are `aes128`,`aes192` and `aes256`.
 

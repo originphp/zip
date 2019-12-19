@@ -5,6 +5,7 @@ use Origin\Zip\Zip;
 use PHPUnit\Framework\TestCase;
 use Origin\Zip\Exception\ZipException;
 use Origin\Zip\Exception\FileNotFoundException;
+use Origin\Zip\FileObject;
 
 class ZipTest extends TestCase
 {
@@ -74,13 +75,49 @@ class ZipTest extends TestCase
     
         $this->assertEquals(6, count($list));
         
-        $this->assertEquals('README.md', $list[0]['name']);
-        $this->assertEquals('Zip.php', $list[2]['name']);
-        $this->assertEquals('Exception/FileNotFoundException.php', $list[4]['name']);
-        $this->assertEquals('Exception/ZipException.php', $list[5]['name']);
-      
-        $this->assertEquals(2665, $list[3]['size']);
-        $this->assertEquals(765, $list[3]['compressedSize']);
+        // on my mac Zip/FileObject are found using iterator in different order
+
+        $file = $this->locate('README.md', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+
+        $file = $this->locate('LICENSE.md', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+
+        $file = $this->locate('FileObject.php', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+
+        $file = $this->locate('Zip.php', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+
+        $file = $this->locate('Exception/FileNotFoundException.php', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+
+        $file = $this->locate('Exception/ZipException.php', $list);
+        $this->assertInstanceOf(FileObject::class, $file);
+        
+        // check keys
+        $this->assertArrayHasKey('name', $file);
+        $this->assertArrayHasKey('size', $file);
+        $this->assertArrayHasKey('timestamp', $file);
+        $this->assertArrayHasKey('compressedSize', $file);
+        $this->assertArrayHasKey('encrypted', $file);
+
+        // check values
+        $this->assertEquals('Exception/ZipException.php', $file['name']);
+        $this->assertEquals(505, $file['size']);
+        $this->assertGreaterThan(strtotime('-5 seconds'), $file['timestamp']);
+        $this->assertEquals(294, $file['compressedSize']);
+        $this->assertFalse($file['encrypted']);
+    }
+
+    private function locate(string $name, array $list) : ?FileObject
+    {
+        foreach ($list as $item) {
+            if ($name === $item['name']) {
+                return $item;
+            }
+        }
+        return null;
     }
 
     public function testExists()

@@ -1,6 +1,7 @@
 <?php
 namespace Origin\Test\Zip;
 
+use InvalidArgumentException;
 use Origin\Zip\Zip;
 use PHPUnit\Framework\TestCase;
 use Origin\Zip\Exception\ZipException;
@@ -45,6 +46,23 @@ class ZipTest extends TestCase
 
         $this->expectException(FileNotFoundException::class);
         $archive->open('foo.zip');
+    }
+
+    public function testOpenError()
+    {
+        $unreadable = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+      
+        file_put_contents($unreadable, 'foo');
+        chmod($unreadable, 000);
+        $archive = new Zip();
+        $this->expectException(ZipException::class);
+        $this->assertInstanceOf(Zip::class, $archive->open($unreadable));
+    }
+
+    public function testNotOpenOrCreate()
+    {
+        $this->expectException(ZipException::class);
+        (new Zip())->list();
     }
 
     /**
@@ -144,6 +162,9 @@ class ZipTest extends TestCase
         $archive->delete('README.md');
 
         $this->assertFalse($archive->exists('README.md'));
+
+        $this->expectException(FileNotFoundException::class);
+        $archive->delete('passwords.txt');
     }
 
     public function testAdd()
@@ -153,6 +174,13 @@ class ZipTest extends TestCase
         $this->assertFalse($archive->exists('README.md'));
         $archive->add(dirname(__DIR__) .'/README.md');
         $this->assertTrue($archive->exists('README.md'));
+    }
+
+    public function testAddInvalidEncryption()
+    {
+        $tmp = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+        $this->expectException(InvalidArgumentException::class);
+        (new Zip())->create('tmp')->add('foo', ['encryption'=>'PGP']);
     }
 
     public function testPassword()

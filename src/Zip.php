@@ -14,8 +14,8 @@
 declare(strict_types = 1);
 namespace Origin\Zip;
 
-use BadMethodCallException;
 use ZipArchive;
+use BadMethodCallException;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
 
@@ -63,6 +63,7 @@ class Zip
             'aes192' => ZipArchive::EM_AES_192,
             'aes256' => ZipArchive::EM_AES_256
         ];
+
         return isset($encryptionMap[$method]) ? $encryptionMap[$method] : null;
     }
 
@@ -126,7 +127,7 @@ class Zip
         }
 
         // php 7.2 zlib 1.1 issue
-        if (!$this->supportsEncryption and $options['password']) {
+        if (! $this->supportsEncryption and $options['password']) {
             throw new BadMethodCallException('PHP 7.3 or greater required for encrypting files');
         }
 
@@ -194,7 +195,7 @@ class Zip
     {
         $this->checkArchive();
 
-        if (!$this->supportsEncryption) {
+        if (! $this->supportsEncryption) {
             throw new BadMethodCallException('PHP 7.3 or greater required for encrypting files');
         }
 

@@ -85,8 +85,13 @@ class ZipTest extends TestCase
     {
         $archive = new Zip();
         $archive->open(static::$archive);
+        // Check files
         $this->assertTrue($archive->exists('README.md'));
         $this->assertFalse($archive->exists('passwords.txt'));
+        
+        // Check directories
+        $this->assertTrue($archive->exists('Exception/'));
+        $this->assertFalse($archive->exists('Exception'));
     }
 
     /**

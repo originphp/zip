@@ -89,7 +89,6 @@ class ZipTest extends TestCase
         $this->assertFalse($archive->exists('passwords.txt'));
     }
 
-
     /**
      * @depends testExists
      */
@@ -112,12 +111,11 @@ class ZipTest extends TestCase
         $this->assertTrue($archive->exists('README.md'));
     }
 
-
     public function testPassword()
     {
         $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $archive = new Zip();
-        $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password'=>'ladadiladada']);
+        $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password' => 'ladadiladada']);
         $this->assertTrue($archive->save());
 
         $archive = new Zip();

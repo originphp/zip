@@ -60,6 +60,7 @@ class Zip
     
         return $this;
     }
+    
     /**
      * Opens an existing ZIP archive
      *
@@ -108,7 +109,11 @@ class Zip
             return $this;
         }
         
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($item), RecursiveIteratorIterator::SELF_FIRST); #! important
+        # Handle directories
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($item),
+            RecursiveIteratorIterator::SELF_FIRST
+        ); #! important
         
         foreach ($iterator as $iitem) {
             $path = $iitem->getPathName();
@@ -163,12 +168,13 @@ class Zip
         if (! isset($this->encryptionMap[$method])) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $method));
         }
-        
-        $list = $this->list();
-
-        foreach ($list as $file) {
-            if (!$file->encrypted) {
-                $this->archive->setEncryptionName($file->name, $this->encryptionMap[$method], $password);
+        for ($i = 0; $i < $this->archive->numFiles; $i++) {
+            $file = $this->archive->statIndex($i);
+            if (! $file or substr($file['name'], -1) === '/') {
+                continue;
+            }
+            if ($file['encryption_method'] !== 0) {
+                $this->archive->setEncryptionName($file['name'], $this->encryptionMap[$method], $password);
             }
         }
 
@@ -189,12 +195,7 @@ class Zip
         $list = [];
         for ($i = 0; $i < $this->archive->numFiles; $i++) {
             $file = $this->archive->statIndex($i);
-            if (! $file) {
-                continue;
-            }
-
-            // skip folders
-            if (substr($file['name'], -1) === '/') {
+            if (! $file or substr($file['name'], -1) === '/') {
                 continue;
             }
 
@@ -316,7 +317,7 @@ class Zip
     # # # STATIC METHODS # # #
 
     /**
-     * Compresses a file or directory
+     * Creates a ZIP archive from the files or directories supplied
      *
      * @param string|array $source the name(s) of the file or directory to compress
      * @param string $desination file with full path to where the zip file will be stored
@@ -335,11 +336,12 @@ class Zip
         foreach ((array) $source as $item) {
             $archive->add($item, $options);
         }
+
         return $archive->save($desination);
     }
 
     /**
-     * Extracts a ZIP file
+     * Unzips the ZIP file
      *
      * @param string $source the ZIP file to extract
      * @param string $desination the directory to extract too
@@ -349,7 +351,7 @@ class Zip
      * @return bool
      * @throws \Origin\Zip\Exception\FileNotFoundException
      */
-    public static function uncompress(string $source, string $desination, array $options = []) : bool
+    public static function unzip(string $source, string $desination, array $options = []) : bool
     {
         $options += ['password' => null, 'files' => null];
 

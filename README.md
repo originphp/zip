@@ -16,9 +16,9 @@ $ composer require originphp/zip
 
 ## Static Methods
 
-### Compress
+### Create a ZIP Archive
 
-To compress a file or directory
+To create a ZIP archive using a file or directory
 
 ```php
 Zip::zip(__DIR__ .'/src','/backups/today.zip');
@@ -33,7 +33,7 @@ Zip::zip([
     ],'/backups/today.zip');
 ```
 
-### Uncompress/Unzip
+### Unzip a ZIP Archive
 
 To unzip a ZIP file
 
@@ -43,7 +43,7 @@ Zip::unzip('/backups/today.zip','/a/folder');
 
 ## Fluent Interface
 
-### Creating a new file
+### Create a ZIP Archive
 
 To create a new ZIP and files and directories. When you add a directory it will add all files and sub directories recursively.
 
@@ -80,18 +80,18 @@ $zip->create('/path/to/file.zip')
 
 ### Compression
 
-Sometimes you might want certain files to not be compressed.
+If you just want to store a file in the ZIP archive without compression you can set `compress` to false.
 
 ```php
 $zip = new Zip();
 $zip->create('/path/to/file.zip')
-    ->add('README.md',['compress'=>false])
+    ->add('logo.jpg',['compress'=>false])
     ->save();
 ```
 
-### Extracting/Unzipping
+### Unzip a ZIP Archive
 
-To extract a ZIP file
+To extract files from a ZIP file
 
 ```php
 $zip = new Zip();
@@ -127,7 +127,7 @@ To list contents of a ZIP file
 ```php
 $zip = new Zip();
 $list = $zip->open('/path/to/file.zip')
-    ->list();
+            ->list();
 ```
 
 This will output like this
@@ -151,7 +151,7 @@ You can also just list files from within a folder of the ZIP file
 ```php
 $zip = new Zip();
 $testFiles = $zip->open('/path/to/file.zip')
-    ->list('tests');
+                 ->list('tests');
 ```
 
 ### Deleting Files

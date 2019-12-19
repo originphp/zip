@@ -69,7 +69,7 @@ $zip->create('/path/to/file.zip')
 
 ### Encryption
 
-To encrypt all the files that you have added, call the `encrypt` method after adding the files, you can optionally supply the encryption method. Supported encryption methods are `aes128`,`aes192` and `aes256`.
+To encrypt all the files in the archive, call the `encrypt` method after adding the files, you can optionally supply the encryption method. Supported encryption methods are `aes128`,`aes192` and `aes256`.
 
 ```php
 $zip = new Zip();
@@ -92,7 +92,7 @@ $zip->create('/path/to/file.zip')
 
 ### Compression
 
-If you just want to store a file in the ZIP archive without compression you can set `compress` to false.
+If you just want to store a file in the ZIP archive without compression you can set `compress` to `false`.
 
 ```php
 $zip = new Zip();

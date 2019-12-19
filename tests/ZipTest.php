@@ -1,12 +1,12 @@
 <?php
 namespace Origin\Test\Zip;
 
-use InvalidArgumentException;
 use Origin\Zip\Zip;
+use Origin\Zip\FileObject;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Origin\Zip\Exception\ZipException;
 use Origin\Zip\Exception\FileNotFoundException;
-use Origin\Zip\FileObject;
 
 class ZipTest extends TestCase
 {
@@ -32,11 +32,6 @@ class ZipTest extends TestCase
         $unaccesibleFile = sys_get_temp_dir() . '/' . uniqid();
         mkdir($unaccesibleFile, 0000);
         $archive->create($unaccesibleFile);
-    }
-
-    public function testOverwrite()
-    {
-        $this->markTestIncomplete('Not implemented yet');
     }
 
     public function testOpen()
@@ -135,6 +130,7 @@ class ZipTest extends TestCase
                 return $item;
             }
         }
+
         return null;
     }
 
@@ -180,7 +176,7 @@ class ZipTest extends TestCase
     {
         $tmp = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $this->expectException(InvalidArgumentException::class);
-        (new Zip())->create('tmp')->add('foo', ['encryption'=>'PGP']);
+        (new Zip())->create('tmp')->add('foo', ['encryption' => 'PGP']);
     }
 
     public function testPassword()
@@ -195,6 +191,53 @@ class ZipTest extends TestCase
         $list = $archive->list();
         $this->assertTrue($archive->exists('README.md'));
         $this->assertEquals(1, $list[0]['encrypted']);
+    }
+
+    public function testExtract()
+    {
+        $destination = sys_get_temp_dir() . '/' . uniqid();
+
+        $archive = new Zip();
+        $archive->open(static::$archive);
+
+        $this->assertTrue($archive->extract($destination));
+        $this->assertFileExists($destination . '/README.md');
+        $this->assertFileExists($destination . '/LICENSE.md');
+        $this->assertFileExists($destination . '/Zip.php');
+        $this->assertFileExists($destination . '/Exception/ZipException.php');
+        $this->assertFileExists($destination . '/Exception/FileNotFoundException.php');
+    }
+
+    public function testExtractWithPassword()
+    {
+        $destination = sys_get_temp_dir() . '/' . uniqid();
+        $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+
+        $archive = new Zip();
+        $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password' => 12345]);
+
+        $this->assertTrue($archive->save());
+        $archive->open($file);
+        $this->assertFalse($archive->extract($destination));
+
+        $this->assertTrue($archive->extract($destination, ['password' => 12345]));
+        $this->assertSame(file_get_contents($destination . '/README.md'), file_get_contents(dirname(__DIR__) .'/README.md'));
+    }
+
+    public function testOverwrite()
+    {
+        $archive = new Zip();
+
+        // sanity check
+        $archive->open(static::$archive);
+        $this->assertTrue($archive->exists('LICENSE.md'));
+
+        // start test
+        $archive->create(static::$archive, ['overwrite' => true])->add(dirname(__DIR__) .'/README.md')->save();
+        $archive->open(static::$archive);
+
+        $this->assertTrue($archive->exists('README.md'));
+        $this->assertFalse($archive->exists('LICENSE.md'));
     }
 
     public static function setUpAfterClass(): void

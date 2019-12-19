@@ -168,6 +168,7 @@ class Zip
         if (! isset($this->encryptionMap[$method])) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $method));
         }
+
         for ($i = 0; $i < $this->archive->numFiles; $i++) {
             $file = $this->archive->statIndex($i);
             if (! $file or substr($file['name'], -1) === '/') {
@@ -278,7 +279,7 @@ class Zip
         $options += ['password' => null, 'files' => null];
 
         if ($options['password']) {
-            $this->archive->setPassword($options['password']);
+            $this->archive->setPassword((string) $options['password']);
         }
 
         return $this->archive->extractTo($desination, $options['files']);
@@ -295,7 +296,7 @@ class Zip
     {
         $this->archive->addFromString($name, file_get_contents($filename));
         if ($options['password'] !== null) {
-            $this->archive->setEncryptionName($name, $this->encryptionMap[$options['encryption']], $options['password']);
+            $this->archive->setEncryptionName($name, $this->encryptionMap[$options['encryption']], (string) $options['password']);
         }
         if ($options['compress'] === false) {
             $this->archive->setCompressionName($name, ZipArchive::CM_STORE);
@@ -365,7 +366,7 @@ class Zip
         }
 
         if ($options['password']) {
-            $archive->setPassword($options['password']);
+            $archive->setPassword((string) $options['password']);
         }
 
         return $archive->extractTo($desination, $options['files']);

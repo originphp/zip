@@ -3,6 +3,7 @@ namespace Origin\Test\Zip;
 
 use Origin\Zip\Zip;
 use Origin\Zip\FileObject;
+use BadMethodCallException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Origin\Zip\Exception\ZipException;
@@ -324,6 +325,31 @@ class ZipTest extends TestCase
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $this->assertFalse(Zip::unzip(static::$archive, $destination));
         $this->assertTrue(Zip::unzip(static::$archive, $destination, ['password' => 1234]));
+    }
+
+    public function testEncryptionNotSupported()
+    {
+        $this->expectException(BadMethodCallException::class);
+        
+        if (static::$supportsEncryption) {
+            $this->markTestSkipped('This test is for PHP 7.2');
+        }
+
+        (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
+            ->add(dirname(__DIR__) . '/README.md')  // file
+            ->encrypt('foo');
+    }
+
+    public function testAddEncryptionNotSupported()
+    {
+        $this->expectException(BadMethodCallException::class);
+        
+        if (static::$supportsEncryption) {
+            $this->markTestSkipped('This test is for PHP 7.2');
+        }
+
+        (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
+            ->add(dirname(__DIR__) . '/README.md', ['password' => 'foo']);
     }
 
     public static function setUpAfterClass(): void

@@ -15,7 +15,6 @@ declare(strict_types = 1);
 namespace Origin\Zip;
 
 use ZipArchive;
-use BadMethodCallException;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
 
@@ -33,33 +32,26 @@ class Zip
      */
     private $archive;
 
-    /**
-     * @var boolean
-     */
-    private $supportsEncryption = false;
 
     public function __construct()
     {
-        $this->supportsEncryption = version_compare(phpversion(), '7.3', '>=');
+        var_dump(phpversion('zlib'));
+        
+        die();
     }
 
     /**
-     * Gets the encryption method
+     * Map of Encryption methods, not this requires zlib >= 1.2 which is not part
+     * of the PHP 7.2 php zlib extension
      *
-     * @param string $method
-     * @return integer|null
+     * @var array
      */
-    private function encryptionMethod(string $method) : ?int
-    {
-        $encryptionMap = [
-            'none' => ZipArchive::EM_NONE,
-            'aes128' => ZipArchive::EM_AES_128,
-            'aes192' => ZipArchive::EM_AES_192,
-            'aes256' => ZipArchive::EM_AES_256
-        ];
-
-        return isset($encryptionMap[$method]) ? $encryptionMap[$method] : null;
-    }
+    private $encryptionMap = [
+        'none' => ZipArchive::EM_NONE,
+        'aes128' => ZipArchive::EM_AES_128,
+        'aes192' => ZipArchive::EM_AES_192,
+        'aes256' => ZipArchive::EM_AES_256
+    ];
 
     /**
      * Creates a new ZIP file
@@ -116,11 +108,7 @@ class Zip
        
         $this->checkArchive();
 
-        if (! $this->supportsEncryption and $options['password']) {
-            throw new BadMethodCallException('Encryption requires PHP 7.3 and above');
-        }
-
-        if ($this->supportsEncryption and $this->encryptionMethod($options['encryption']) === null) {
+        if (! isset($this->encryptionMap[$options['encryption']])) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $options['encryption']));
         }
 
@@ -188,11 +176,7 @@ class Zip
     {
         $this->checkArchive();
 
-        if (! $this->supportsEncryption) {
-            throw new BadMethodCallException('Encryption requires PHP 7.3 and above');
-        }
-
-        if (! $this->encryptionMethod($method)) {
+        if (! isset($this->encryptionMap[$method])) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $method));
         }
 
@@ -203,7 +187,7 @@ class Zip
             }
 
             if ($file['encryption_method'] === 0) {
-                $this->archive->setEncryptionName($file['name'], $this->encryptionMethod($method), $password);
+                $this->archive->setEncryptionName($file['name'], $this->encryptionMap[$method], $password);
             }
         }
 
@@ -323,8 +307,8 @@ class Zip
     private function addFileToArchive(string $name, string $filename, array $options) : void
     {
         $this->archive->addFromString($name, file_get_contents($filename));
-        if ($options['password'] !== null and $this->supportsEncryption) {
-            $this->archive->setEncryptionName($name, $this->encryptionMethod($options['encryption']), (string) $options['password']);
+        if ($options['password'] !== null) {
+            $this->archive->setEncryptionName($name, $this->encryptionMap[$options['encryption']], (string) $options['password']);
         }
         if ($options['compress'] === false) {
             $this->archive->setCompressionName($name, ZipArchive::CM_STORE);

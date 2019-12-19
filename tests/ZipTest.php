@@ -116,14 +116,17 @@ class ZipTest extends TestCase
         $this->assertArrayHasKey('size', $file);
         $this->assertArrayHasKey('timestamp', $file);
         $this->assertArrayHasKey('compressedSize', $file);
-        $this->assertArrayHasKey('encrypted', $file);
-
+     
         // check values
         $this->assertEquals('Exception/ZipException.php', $file['name']);
         $this->assertEquals(505, $file['size']);
         $this->assertGreaterThan(strtotime('-5 seconds'), $file['timestamp']);
         $this->assertEquals(294, $file['compressedSize']);
-        $this->assertFalse($file['encrypted']);
+
+        if (static::$supportsEncryption) {
+            $this->assertFalse($file['encrypted']);
+            $this->assertArrayHasKey('encrypted', $file);
+        }
     }
 
     private function locate(string $name, array $list) : ?FileObject

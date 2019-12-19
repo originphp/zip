@@ -327,13 +327,13 @@ class ZipTest extends TestCase
 
     public function testUnzipUnreadable()
     {
-        $this->expectException(FileNotFoundException::class);
-        
+        $this->expectException(ZipException::class);
+
         $unreadable = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         file_put_contents($unreadable, 'foo');
         chmod($unreadable, 000);
        
-        Zip::unzip(sys_get_temp_dir() . '/dota2.zip', sys_get_temp_dir());
+        Zip::unzip($unreadable, sys_get_temp_dir());
     }
 
     public function testZipWithPassword()

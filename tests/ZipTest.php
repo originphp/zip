@@ -49,7 +49,6 @@ class ZipTest extends TestCase
     public function testOpenError()
     {
         $unreadable = sys_get_temp_dir() . '/' . uniqid() . '.zip';
-      
         file_put_contents($unreadable, 'foo');
         chmod($unreadable, 000);
         $archive = new Zip();
@@ -269,6 +268,7 @@ class ZipTest extends TestCase
         $archive = new Zip();
         $result = $archive->create($file)
             ->add(dirname(__DIR__) . '/README.md')  // file
+            ->add(dirname(__DIR__) . '/src')  // file
             ->encrypt('foo')
             ->save();
         $this->assertTrue($result);
@@ -278,6 +278,18 @@ class ZipTest extends TestCase
         $this->assertTrue($list[0]['encrypted']);
         $this->assertFalse($archive->extract($destination));
         $this->assertTrue($archive->extract($destination, ['password' => 'foo']));
+    }
+
+    public function testInvalidEncryption()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        if (! static::$supportsEncryption) {
+            $this->markTestSkipped('This requires PHP 7.3 and above');
+        }
+        (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
+            ->add(dirname(__DIR__) . '/README.md')  // file
+            ->encrypt('foo', 'pgp')
+            ->save();
     }
 
     public function testStore()
@@ -305,6 +317,23 @@ class ZipTest extends TestCase
     {
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $this->assertTrue(Zip::unzip(static::$archive, $destination));
+    }
+
+    public function testUnzipNotFound()
+    {
+        $this->expectException(FileNotFoundException::class);
+        Zip::unzip(sys_get_temp_dir() . '/dota2.zip', sys_get_temp_dir());
+    }
+
+    public function testUnzipUnreadable()
+    {
+        $this->expectException(FileNotFoundException::class);
+        
+        $unreadable = sys_get_temp_dir() . '/' . uniqid() . '.zip';
+        file_put_contents($unreadable, 'foo');
+        chmod($unreadable, 000);
+       
+        Zip::unzip(sys_get_temp_dir() . '/dota2.zip', sys_get_temp_dir());
     }
 
     public function testZipWithPassword()

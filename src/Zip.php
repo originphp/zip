@@ -32,14 +32,6 @@ class Zip
      */
     private $archive;
 
-
-    public function __construct()
-    {
-        var_dump(phpversion('zlib'));
-        
-        die();
-    }
-
     /**
      * Map of Encryption methods, not this requires zlib >= 1.2 which is not part
      * of the PHP 7.2 php zlib extension

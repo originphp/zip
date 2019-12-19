@@ -33,6 +33,18 @@ Zip::zip([
     ],'/backups/today.zip');
 ```
 
+You can also pass any of the following options keys
+
+- password: a password used to encrypt the archive with
+- compress: default:`true`. Set to true if you just want to store the files without compression
+- encryption: default:`aes256`. This is the encryption method used when using a password. Supported encryption methods: `aes128`,`aes192`,and `aes256`.
+
+```php
+Zip::zip(__DIR__ .'/src','/backups/today.zip',[
+    'password'=>'passw0rd'
+    ]);
+```
+
 ### Unzip a ZIP Archive
 
 To unzip a ZIP file

@@ -72,6 +72,8 @@ class ZipTest extends TestCase
 
         $list = $archive->list();
     
+        $this->assertEquals(6, count($list));
+        
         $this->assertEquals('README.md', $list[0]['name']);
         $this->assertEquals('Zip.php', $list[2]['name']);
         $this->assertEquals('Exception/FileNotFoundException.php', $list[4]['name']);

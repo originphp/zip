@@ -184,7 +184,7 @@ class ZipTest extends TestCase
         }
         $tmp = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $this->expectException(InvalidArgumentException::class);
-        (new Zip())->create('tmp')->add('foo', ['encryption' => 'PGP']);
+        (new Zip())->create('tmp.zip')->add('foo', ['encryption' => 'PGP']);
     }
 
     public function testPassword()

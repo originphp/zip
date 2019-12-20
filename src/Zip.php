@@ -34,8 +34,8 @@ class Zip
     private $archive;
 
     /**
-     * ZipArchive encryption functions require PHP 7.3, docs say 7.2, but to do
-     * that you need to upgrade the zlib to 1.2 or greater
+     * ZipArchive encryption functions require PHP 7.3, or you can use 7.2 but you need
+     * to upgrade ZLIB to version 1.2 or higher.
      *
      * @var boolean
      */
@@ -79,7 +79,8 @@ class Zip
     {
         $options += ['overwrite' => false,'password' => null];
         $this->archive = new ZipArchive();
-        if ($this->archive->open($filename, $options['overwrite'] ? ZipArchive::OVERWRITE : ZipArchive::CREATE) !== true) {
+      
+        if ($this->archive->open($filename, $options['overwrite'] ? ZipArchive::CREATE | ZipArchive::OVERWRITE : ZipArchive::CREATE) !== true) {
             throw new ZipException(sprintf('Error opening %s', $filename));
         }
     

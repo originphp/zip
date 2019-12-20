@@ -1,4 +1,4 @@
-# Zip (alpha)
+# Zip
 
 ![license](https://img.shields.io/badge/license-MIT-brightGreen.svg)
 [![build](https://travis-ci.org/originphp/zip.svg?branch=master)](https://travis-ci.org/originphp/zip)
@@ -15,6 +15,8 @@ $ composer require originphp/zip
 ```
 
 ## Static Methods
+
+The static methods provide a quick way to zip and unzip archives.
 
 ### Create a ZIP Archive
 
@@ -55,7 +57,17 @@ To unzip a ZIP file
 Zip::unzip('/backups/today.zip','/a/folder');
 ```
 
+If any of the files are encrypted you provide a password like this
+
+```php
+Zip::unzip('/backups/today.zip','/a/folder',[
+    'password' => 'passw0rd'
+]);
+```
+
 ## Fluent Interface
+
+The ZIP class also provides a fluent interface for working with ZIP archives.
 
 ### Create a ZIP Archive
 

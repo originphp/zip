@@ -50,4 +50,13 @@ class FileObjectTest extends \PHPUnit\Framework\TestCase
         // Need to call this to ensure no errors but cant test it.
         unset($object->furion);
     }
+
+    public function testDebugInfo()
+    {
+        $data = ['name' => 'foo.txt','path' => 'folder/subfolder','size' => 32000,'timestamp' => strtotime('2019-10-31 14:40')];
+        $object = new FileObject($data);
+
+        $result = print_r($object, true);
+        $this->assertEquals('6a838e0637db634a0870a58e81cba01b', md5($result));
+    }
 }

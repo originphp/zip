@@ -43,7 +43,7 @@ class Zip
 
     public function __construct()
     {
-        $this->supportsEncryption = defined('ZipArchive::EM_NONE');
+        $this->supportsEncryption = defined('ZipArchive::EM_NONE') && version_compare(phpversion(), '7.3', '>=');
     }
 
     /**

@@ -55,7 +55,7 @@ class Zip
      * @param string $method
      * @return integer|null
      */
-    private function encryptionMethod(string $method) : ?int
+    private function encryptionMethod(string $method): ?int
     {
         $encryptionMap = [
             'none' => ZipArchive::EM_NONE,
@@ -75,7 +75,7 @@ class Zip
      *   - overwrite: default:false
      * @return \Oirigin\Zip\Zip
      */
-    public function create(string $filename, array $options = []) : Zip
+    public function create(string $filename, array $options = []): Zip
     {
         $options += ['overwrite' => false,'password' => null];
         $this->archive = new ZipArchive();
@@ -93,7 +93,7 @@ class Zip
      * @param string $filename
      * @return \Oirigin\Zip\Zip
      */
-    public function open(string $filename) : Zip
+    public function open(string $filename): Zip
     {
         if (! file_exists($filename)) {
             throw new FileNotFoundException(sprintf('%s could not be found', $filename));
@@ -117,18 +117,18 @@ class Zip
      *   - encryption: the encryption method to be used when setting a password
      * @return \Origin\Zip\Zip
      */
-    public function add(string $item, array $options = []) : Zip
+    public function add(string $item, array $options = []): Zip
     {
         $options += ['encryption' => 'aes256','password' => null,'compress' => true];
        
         $this->checkArchive();
 
-        if ($this->supportsEncryption and $this->encryptionMethod($options['encryption']) === null) {
+        if ($this->supportsEncryption && $this->encryptionMethod($options['encryption']) === null) {
             throw new InvalidArgumentException(sprintf('Unkown encryption type %s', $options['encryption']));
         }
 
         // php 7.2 zlib 1.1 issue
-        if (! $this->supportsEncryption and $options['password']) {
+        if (! $this->supportsEncryption && $options['password']) {
             throw new BadMethodCallException('PHP 7.3 or greater required for encrypting files');
         }
 
@@ -151,7 +151,7 @@ class Zip
        
             $name = str_replace('\\', '/', $path);
      
-            if (substr($name, -3) === '/..' or substr($name, -2) === '/.') {
+            if (substr($name, -3) === '/..' || substr($name, -2) === '/.') {
                 continue;
             }
 
@@ -174,12 +174,30 @@ class Zip
      * @param string $name
      * @return \Origin\Zip\Zip
      */
-    public function delete(string $name) : Zip
+    public function delete(string $name): Zip
     {
         $this->checkArchive();
 
         if (! $this->archive->deleteName($name)) {
             throw new FileNotFoundException(sprintf('%s could not be found', $name));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Renames a file in the Zip archive
+     *
+     * @param string $from
+     * @param string $to
+     * @return \Origin\Zip\Zip
+     */
+    public function rename(string $from, string $to): Zip
+    {
+        $this->checkArchive();
+
+        if (! $this->archive->renameName($from, $to)) {
+            throw new ZipException(sprintf('Error renaming %s ', $from));
         }
 
         return $this;
@@ -192,7 +210,7 @@ class Zip
      * @param string $method default:aes256. Supported encryption aes128,aes192,aes256
      * @return \Origin\Zip\Zip
      */
-    public function encrypt(string $password, string $method = 'aes256') : Zip
+    public function encrypt(string $password, string $method = 'aes256'): Zip
     {
         $this->checkArchive();
 
@@ -206,11 +224,11 @@ class Zip
 
         for ($i = 0; $i < $this->archive->numFiles; $i++) {
             $file = $this->archive->statIndex($i);
-            if (! $file or substr($file['name'], -1) === '/') {
+            if (! $file || substr($file['name'], -1) === '/') {
                 continue;
             }
 
-            if (isset($file['encryption_method']) and $file['encryption_method'] === 0) {
+            if (isset($file['encryption_method']) && $file['encryption_method'] === 0) {
                 $this->archive->setEncryptionName($file['name'], $this->encryptionMethod($method), $password);
             }
         }
@@ -224,7 +242,7 @@ class Zip
      * @param string $path Folder path to get e.g. Src/Controller
      * @return array
      */
-    public function list(string $path = null) : array
+    public function list(string $path = null): array
     {
         $this->checkArchive();
         $length = $path ? strlen($path) + 1 : 0;
@@ -232,11 +250,11 @@ class Zip
         $list = [];
         for ($i = 0; $i < $this->archive->numFiles; $i++) {
             $file = $this->archive->statIndex($i);
-            if (! $file or substr($file['name'], -1) === '/') {
+            if (! $file || substr($file['name'], -1) === '/') {
                 continue;
             }
 
-            if (! $path or ($path and substr($file['name'], 0, $length) === $path . '/')) {
+            if (! $path || ($path && substr($file['name'], 0, $length) === $path . '/')) {
                 $data = [
                     'name' => $file['name'],
                     'size' => $file['size'],
@@ -261,13 +279,13 @@ class Zip
      *
      * @return int
      */
-    public function count() : int
+    public function count(): int
     {
         $this->checkArchive();
         $count = 0;
         for ($i = 0; $i < $this->archive->numFiles; $i++) {
             $file = $this->archive->statIndex($i);
-            if ($file and substr($file['name'], -1) !== '/') {
+            if ($file && substr($file['name'], -1) !== '/') {
                 $count++;
             }
         }
@@ -281,7 +299,7 @@ class Zip
      * @param string $name
      * @return boolean
      */
-    public function exists(string $name) : bool
+    public function exists(string $name): bool
     {
         $this->checkArchive();
 
@@ -294,7 +312,7 @@ class Zip
      * @param string $desination
      * @return boolean
      */
-    public function save() : bool
+    public function save(): bool
     {
         $this->checkArchive();
 
@@ -311,7 +329,7 @@ class Zip
     * @return bool
     * @throws \Origin\Zip\Exception\FileNotFoundException
     */
-    public function extract(string $desination, array $options = []) : bool
+    public function extract(string $desination, array $options = []): bool
     {
         $this->checkArchive();
 
@@ -331,7 +349,7 @@ class Zip
     * @param string $filename
     * @return void
     */
-    private function addFileToArchive(string $name, string $filename, array $options) : void
+    private function addFileToArchive(string $name, string $filename, array $options): void
     {
         $this->archive->addFromString($name, file_get_contents($filename));
         if ($options['password'] !== null) {
@@ -347,7 +365,7 @@ class Zip
     *
     * @return void
     */
-    private function checkArchive() : void
+    private function checkArchive(): void
     {
         if (! $this->archive) {
             throw new ZipException('No ZIP archive. Create a new or open an existing ZIP archive');
@@ -369,7 +387,7 @@ class Zip
      * @return bool
      * @throws \Origin\Zip\Exception\FileNotFoundException
      */
-    public static function zip($source, string $desination, array $options = []) : bool
+    public static function zip($source, string $desination, array $options = []): bool
     {
         $options += ['encryption' => 'aes256','compress' => true, 'password' => null,'overwrite' => false];
 
@@ -394,7 +412,7 @@ class Zip
      * @return bool
      * @throws \Origin\Zip\Exception\FileNotFoundException
      */
-    public static function unzip(string $source, string $desination, array $options = []) : bool
+    public static function unzip(string $source, string $desination, array $options = []): bool
     {
         $options += ['password' => null, 'files' => null];
 

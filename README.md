@@ -182,6 +182,16 @@ $testFiles = $zip->open('/path/to/file.zip')
                  ->list('tests');
 ```
 
+### Renaming
+
+To rename a file in a ZIP archive
+
+```php
+$zip = new Zip();
+$zip->open('/path/to/file.zip')
+    ->rename('foo.txt','bar.txt');
+```
+
 ### Deleting Files
 
 To delete a file from a ZIP archive

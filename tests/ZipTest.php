@@ -165,6 +165,26 @@ class ZipTest extends TestCase
         $this->assertFalse($archive->exists('Exception'));
     }
 
+
+    /**
+     * @depends testExists
+     */
+    public function testRename()
+    {
+        $archive = new Zip();
+        $archive->open(static::$archive);
+        $this->assertTrue($archive->exists('README.md'));
+        $archive->rename('README.md', 'README.old');
+
+        $this->assertFalse($archive->exists('README.md'));
+        $this->assertTrue($archive->exists('README.old'));
+
+        $archive->rename('README.old', 'README.md');
+
+        $this->expectException(ZipException::class);
+        $archive->rename('passwords.txt', 'password');
+    }
+
     /**
      * @depends testExists
      */
@@ -180,6 +200,7 @@ class ZipTest extends TestCase
         $this->expectException(FileNotFoundException::class);
         $archive->delete('passwords.txt');
     }
+
 
     public function testAdd()
     {

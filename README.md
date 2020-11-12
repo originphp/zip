@@ -182,6 +182,16 @@ $testFiles = $zip->open('/path/to/file.zip')
                  ->list('tests');
 ```
 
+### Getting contents of a file
+
+To get the contents of a file
+
+```php
+$zip = new Zip();
+$contents = $zip->open('/path/to/file.zip')
+                 ->get('README.md');
+```
+
 ### Renaming
 
 To rename a file in a ZIP archive

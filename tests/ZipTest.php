@@ -185,6 +185,17 @@ class ZipTest extends TestCase
         $archive->rename('passwords.txt', 'password');
     }
 
+    public function testGet()
+    {
+        $archive = new Zip();
+        $archive->open(static::$archive);
+  
+        $this->assertStringContainsString('$ composer require originphp/zip', $archive->get('README.md'));
+        
+        $this->expectException(FileNotFoundException::class);
+        $archive->get('passwords.txt');
+    }
+
     /**
      * @depends testExists
      */

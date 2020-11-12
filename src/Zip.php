@@ -186,6 +186,25 @@ class Zip
     }
 
     /**
+     * Gets a file from the Zip Archive
+     *
+     * @param string $name
+     * @return string
+     */
+    public function get(string $name): string
+    {
+        $this->checkArchive();
+
+        $contents = $this->archive->getFromName($name);
+
+        if ($contents === false) {
+            throw new FileNotFoundException(sprintf('%s could not be found', $name));
+        }
+
+        return $contents;
+    }
+
+    /**
      * Renames a file in the Zip archive
      *
      * @param string $from

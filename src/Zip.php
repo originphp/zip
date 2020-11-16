@@ -326,16 +326,30 @@ class Zip
     }
 
     /**
-     * Saves the ZIP archive
+     * Closes the archive and saves the changes (ZipArchive close method is called at the end of script)
+     *
+     * @see https://www.php.net/manual/en/ziparchive.close.php
+     * @return boolean
+     */
+    public function close() : bool
+    {
+        $this->checkArchive();
+
+        return $this->archive->close();
+    }
+
+    /**
+     * An alias for close
+     *
+     * @internal This might have be deprecated in future as it is misleading, ZipArchive automatically
+     * closes and saves changes when the script finishes.
      *
      * @param string $desination
      * @return boolean
      */
     public function save(): bool
     {
-        $this->checkArchive();
-
-        return $this->archive->close();
+        return $this->close();
     }
 
     /**

@@ -41,7 +41,7 @@ class ZipTest extends TestCase
             ->add($root . '/README.md')  // file
             ->add($root . '/LICENSE.md', ['compress' => false])  // file
             ->add($root . '/src') // directory
-            ->save();
+            ->close();
         $this->assertTrue($result);
 
         $this->expectException(ZipException::class);

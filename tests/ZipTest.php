@@ -1,7 +1,7 @@
 <?php
 /**
  * OriginPHP Framework
- * Copyright 2018 - 2020 Jamiel Sharief.
+ * Copyright 2018 - 2021 Jamiel Sharief.
  *
  * Licensed under The MIT License
  * The above copyright notice and this permission notice shall be included in all copies or substantial
@@ -29,8 +29,10 @@ class ZipTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
+
         static::$archive = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         static::$supportsEncryption = version_compare(phpversion(), '7.3', '>=');
+
     }
     
     public function testCreate()
@@ -241,7 +243,7 @@ class ZipTest extends TestCase
         $file = sys_get_temp_dir() . '/' . uniqid() . '.zip';
         $archive = new Zip();
         $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password' => 'ladadiladada']);
-        $this->assertTrue($archive->save());
+        $this->assertTrue($archive->close());
 
         $archive = new Zip();
         $archive->open($file);
@@ -277,7 +279,7 @@ class ZipTest extends TestCase
         $archive = new Zip();
         $archive->create($file)->add(dirname(__DIR__) .'/README.md', ['password' => 12345]);
 
-        $this->assertTrue($archive->save());
+        $this->assertTrue($archive->close());
         $archive->open($file);
         $this->assertFalse($archive->extract($destination));
 
@@ -294,7 +296,7 @@ class ZipTest extends TestCase
         $this->assertTrue($archive->exists('LICENSE.md'));
 
         // start test
-        $archive->create(static::$archive, ['overwrite' => true])->add(dirname(__DIR__) .'/README.md')->save();
+        $archive->create(static::$archive, ['overwrite' => true])->add(dirname(__DIR__) .'/README.md')->close();
         $archive->open(static::$archive);
 
         $this->assertTrue($archive->exists('README.md'));
@@ -315,7 +317,7 @@ class ZipTest extends TestCase
             ->add(dirname(__DIR__) . '/README.md')  // file
             ->add(dirname(__DIR__) . '/src')  // file
             ->encrypt('foo')
-            ->save();
+            ->close();
         $this->assertTrue($result);
         
         $list = $archive->open($file)->list();
@@ -334,7 +336,7 @@ class ZipTest extends TestCase
         (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
             ->add(dirname(__DIR__) . '/README.md')  // file
             ->encrypt('foo', 'pgp')
-            ->save();
+            ->close();
     }
 
     public function testStore()
@@ -343,7 +345,7 @@ class ZipTest extends TestCase
         $archive = new Zip();
         $result = $archive->create($file)
             ->add(dirname(__DIR__) . '/README.md', ['compress' => false])  // file
-            ->save();
+            ->close();
         $this->assertTrue($result);
         $list = $archive->open($file)->list();
         
@@ -402,31 +404,6 @@ class ZipTest extends TestCase
         $destination = sys_get_temp_dir() . '/' . uniqid();
         $this->assertFalse(Zip::unzip(static::$archive, $destination));
         $this->assertTrue(Zip::unzip(static::$archive, $destination, ['password' => 1234]));
-    }
-
-    public function testEncryptionNotSupported()
-    {
-        $this->expectException(BadMethodCallException::class);
-        
-        if (static::$supportsEncryption) {
-            $this->markTestSkipped('This test is for PHP 7.2');
-        }
-
-        (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
-            ->add(dirname(__DIR__) . '/README.md')  // file
-            ->encrypt('foo');
-    }
-
-    public function testAddEncryptionNotSupported()
-    {
-        $this->expectException(BadMethodCallException::class);
-        
-        if (static::$supportsEncryption) {
-            $this->markTestSkipped('This test is for PHP 7.2');
-        }
-
-        (new Zip())->create(sys_get_temp_dir() . '/' . uniqid() . '.zip')
-            ->add(dirname(__DIR__) . '/README.md', ['password' => 'foo']);
     }
 
     public static function setUpAfterClass(): void

@@ -1,7 +1,7 @@
 # Zip
 
 ![license](https://img.shields.io/badge/license-MIT-brightGreen.svg)
-[![build](https://travis-ci.org/originphp/zip.svg?branch=master)](https://travis-ci.org/originphp/zip)
+[![build](https://github.com/originphp/zip/workflows/CI/badge.svg)](https://github.com/originphp/zip/actions)
 [![coverage](https://coveralls.io/repos/github/originphp/zip/badge.svg?branch=master)](https://coveralls.io/github/originphp/zip?branch=master)
 
 A ZIP utility for creating and unziping ZIP files.

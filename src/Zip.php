@@ -1,7 +1,7 @@
 <?php
 /**
  * OriginPHP Framework
- * Copyright 2018 - 2020 Jamiel Sharief.
+ * Copyright 2018 - 2021 Jamiel Sharief.
  *
  * Licensed under The MIT License
  * The above copyright notice and this permission notice shall be included in all copies or substantial
@@ -110,7 +110,7 @@ class Zip
     /**
      * Adds a file or directory to the ZIP archive
      *
-     * @param string $filename
+     * @param string $item
      * @param array $options The following option keys are supported
      *   - compress: default:true set to false to just store
      *   - password: the password to set for this file
@@ -339,20 +339,6 @@ class Zip
     }
 
     /**
-     * An alias for close
-     *
-     * @internal This might have be deprecated in future as it is misleading, ZipArchive automatically
-     * closes and saves changes when the script finishes.
-     *
-     * @param string $desination
-     * @return boolean
-     */
-    public function save(): bool
-    {
-        return $this->close();
-    }
-
-    /**
      * Extracts this archive
      *
     * @param string $desination the directory to extract too
@@ -431,7 +417,7 @@ class Zip
             $archive->add($item, $options);
         }
 
-        return $archive->save($desination);
+        return $archive->close($desination);
     }
 
     /**

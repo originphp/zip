@@ -36,10 +36,12 @@ jobs:
         run: |
           composer require php-coveralls/php-coveralls:^2.4 --dev --no-update
           composer update --no-progress --prefer-dist
-      - name: Running PHPUnit
+      - name: Run PHPUnit
         run: "php vendor/bin/phpunit --coverage-clover=clover.xml"
       - name: Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: "php vendor/bin/php-coveralls --verbose"
         if: ${{ success() }}
+      - name: Run PHPStan 
+        run: "vendor/bin/phpstan analyse src --error-format=github"
